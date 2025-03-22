@@ -1,0 +1,76 @@
+﻿@model ShoeStoreMvc.Models.Cart
+
+<div class="container my-5">
+    <h2 class="text-center mb-4">Giỏ hàng của bạn</h2>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    @if (Model != null && Model.Items.Count > 0)
+    {
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr>
+                    <th>Hình ảnh</th>
+                    <th>Sản phẩm</th>
+                    <th>Kích thước</th>
+                    <th>Màu sắc</th>
+                    <th>Số lượng</th>
+                    <th>Đơn giá</th>
+                    <th>Tổng</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    var product = item.Product;
+                    var imageUrl = product?.Images?.FirstOrDefault() ?? "/images/default.jpg";
+                    var sum = @item.Quantity * item.Price;
+                    <tr>
+                        <td>
+                            <img src="@imageUrl" alt="@product?.Name" width="60" />
+                        </td>
+                        <td>@product?.Name</td>
+                        <td>@item.Size</td>
+                        <td>@item.Color</td>
+                        <td>@item.Quantity</td>
+                        <td>@item.Price.ToString("N0") đ</td>
+                      
+                        <td>@sum.ToString("N0") đ</td>
+                        <td>
+                            <form method="post" action="@Url.Action("RemoveFromCart", "Cart")">
+                                <input type="hidden" name="userId" value="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value" />
+                                <input type="hidden" name="productId" value="@item.ProductId" />
+                                <input type="hidden" name="size" value="@item.Size" />
+                                <input type="hidden" name="color" value="@item.Color" />
+                                <button type="submit" class="btn btn-danger btn-sm">Xóa</button>
+                            </form>
+
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="d-flex justify-content-between">
+            <h4>Tổng tiền: @Model.Items.Sum(i => i.Quantity * i.Price).ToString("N0") đ</h4>
+
+            <form method="post" action="@Url.Action("Checkout", "Order")">
+                <input type="hidden" name="userId" value="@Model.UserId" />
+                <button type="submit" class="btn btn-primary">Thanh toán</button>
+            </form>
+        </div>
+
+    }
+    else
+    {
+        <div class="alert alert-warning text-center">Giỏ hàng của bạn đang trống.</div>
+    }
+</div>

@@ -1,0 +1,61 @@
+﻿@{
+    ViewData["Title"] = "Chat với Admin";
+}
+
+<h2>Chat với Admin</h2>
+<div id="chatBox"></div>
+<input type="text" id="messageInput" placeholder="Nhập tin nhắn..." />
+<button id="sendMessageBtn">Gửi</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.5/signalr.min.js"></script>
+<script>
+    var userId = "@ViewData["UserId"]";
+
+    var connection = new signalR.HubConnectionBuilder()
+        .withUrl("http://localhost:5001/chatHub")
+        .build();
+
+    // Nhận tin nhắn và hiển thị ngay khi có sự kiện
+    connection.on("ReceiveMessage", function (sender, message) {
+        var chatBox = document.getElementById("chatBox");
+        var newMessage = document.createElement("p");
+        newMessage.innerHTML = `<strong>${sender}:</strong> ${message}`;
+        chatBox.appendChild(newMessage);
+    });
+
+    // Load lịch sử tin nhắn khi mở chat
+    connection.on("LoadChatHistory", function (messages) {
+        var chatBox = document.getElementById("chatBox");
+        chatBox.innerHTML = ""; // Xóa nội dung cũ
+        messages.forEach(msg => {
+            var msgElement = document.createElement("p");
+            msgElement.innerHTML = `<strong>${msg.senderId}:</strong> ${msg.content}`;
+            chatBox.appendChild(msgElement);
+        });
+    });
+
+    connection.start().then(function () {
+        connection.invoke("JoinRoom", userId);
+        connection.invoke("GetChatHistory", userId);
+    }).catch(err => console.error(err.toString()));
+
+    // Gửi tin nhắn
+    document.getElementById("sendMessageBtn").addEventListener("click", function () {
+        var messageInput = document.getElementById("messageInput");
+        var message = messageInput.value.trim();
+
+        if (message === "") return; // Không gửi tin nhắn rỗng
+
+        connection.invoke("SendMessage", userId, "admin", message)
+            .then(() => {
+                // Cập nhật tin nhắn ngay trên giao diện sau khi gửi
+                var chatBox = document.getElementById("chatBox");
+                var newMessage = document.createElement("p");
+                newMessage.innerHTML = `<strong>${userId}:</strong> ${message}`;
+                chatBox.appendChild(newMessage);
+
+                messageInput.value = ""; // Xóa nội dung ô input sau khi gửi
+            })
+            .catch(err => console.error(err.toString()));
+    });
+</script>

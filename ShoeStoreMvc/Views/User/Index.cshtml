@@ -1,0 +1,24 @@
+﻿@model List<ShoeStoreMvc.Models.User>
+
+<h2>Users</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Status</th>
+            <th>Avatar</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Username</td>
+                <td>@user.Email</td>
+                <td>@user.Status</td>
+                <td><img src="@user.Avatar" width="50" height="50" /></td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,107 @@
+﻿@model ShoeStoreMvc.Models.Product
+
+<div class="container my-5">
+    <h2 class="text-center mb-4">@Model.Name</h2>
+
+    <div class="row">
+        <!-- Hình ảnh sản phẩm -->
+        <div class="col-md-6">
+            <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    @for (int i = 0; i < Model.Images.Length; i++)
+                    {
+                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                            <img src="@Model.Images[i]" class="d-block w-100" alt="@Model.Name" />
+                        </div>
+                    }
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Thông tin sản phẩm -->
+        <div class="col-md-6">
+            <div class="d-flex flex-column justify-content-start mb-4">
+                <h3 class="text-success">@Model.SalePrice.ToString("N0") đ</h3>
+                <div class="d-flex align-items-center">
+                    <p class="text-muted text-decoration-line-through me-2">@Model.OriginalPrice.ToString("N0") đ</p>
+                    @if (Model.OriginalPrice > Model.SalePrice)
+                    {
+                        var discountPercentage = ((Model.OriginalPrice - Model.SalePrice) / Model.OriginalPrice) * 100;
+                        <span class="badge bg-danger">@Math.Round(discountPercentage, 0)% OFF</span>
+                    }
+                </div>
+            </div>
+
+            <p><strong>Category:</strong> @Model.Category</p>
+            <p><strong>Availability:</strong> @Model.Availability</p>
+            <p><strong>Brand:</strong> @Model.Brand</p>
+            <p><strong>Type:</strong> @Model.Type</p>
+            <p><strong>Description:</strong> @Model.Description</p>
+
+            <!-- Thêm vào giỏ hàng -->
+            <form method="post" action="@Url.Action("AddToCart", "Cart")">
+                <input type="hidden" name="userId" value="@User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value" />
+                <input type="hidden" name="productId" value="@Model.Id" />
+                <input type="hidden" id="selectedSize" name="size" value="@Model.Stock.FirstOrDefault()?.Size" />
+                <input type="hidden" id="selectedColor" name="color" value="@Model.Stock.FirstOrDefault()?.Color" />
+                <input type="hidden" id="selectedQuantity" name="quantity" value="1" />
+                <input type="hidden" id="selectedPrice" name="price" value="@Model.SalePrice.ToString("0.##")" />
+
+                <!-- Chọn Size -->
+                <div class="mb-3">
+                    <label for="size" class="form-label">Select Size</label>
+                    <select id="size" class="form-select">
+                        @foreach (var stock in Model.Stock.Select(s => s.Size).Distinct())
+                        {
+                            <option value="@stock">@stock</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Chọn Màu -->
+                <div class="mb-3">
+                    <label for="color" class="form-label">Select Color</label>
+                    <select id="color" class="form-select">
+                        @foreach (var stock in Model.Stock.Select(s => s.Color).Distinct())
+                        {
+                            <option value="@stock">@stock</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Chọn Số Lượng -->
+                <div class="mb-3">
+                    <label for="quantity" class="form-label">Quantity</label>
+                    <input type="number" class="form-control" id="quantity" value="1" min="1" max="@Model.Stock.Sum(s => s.Quantity)" />
+                    <small class="form-text text-muted">In stock: @Model.Stock.Sum(s => s.Quantity)</small>
+                </div>
+
+                <button type="submit" class="btn btn-warning w-100">Add to Cart</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("size").addEventListener("change", function () {
+            document.getElementById("selectedSize").value = this.value;
+        });
+
+        document.getElementById("color").addEventListener("change", function () {
+            document.getElementById("selectedColor").value = this.value;
+        });
+
+        document.getElementById("quantity").addEventListener("change", function () {
+            document.getElementById("selectedQuantity").value = this.value;
+        });
+    });
+</script>

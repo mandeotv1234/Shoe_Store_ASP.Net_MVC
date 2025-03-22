@@ -1,0 +1,160 @@
+﻿<!-- Bộ lọc và tìm kiếm -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <input type="text" id="searchBox" class="form-control" placeholder="Tìm kiếm sản phẩm..." />
+    </div>
+    <div class="col-md-3">
+        <select id="categoryFilter" class="form-control">
+            <option value="">Tất cả danh mục</option>
+            @foreach (var category in ViewBag.Categories)
+            {
+                <option value="@category">@category</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select id="brandFilter" class="form-control">
+            <option value="">Tất cả thương hiệu</option>
+            @foreach (var brand in ViewBag.Brands)
+            {
+                <option value="@brand">@brand</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select id="priceFilter" class="form-control">
+            <option value="">Tất cả mức giá</option>
+            <option value="low">Dưới 500,000₫</option>
+            <option value="medium">500,000₫ - 1,000,000₫</option>
+            <option value="high">Trên 1,000,000₫</option>
+        </select>
+    </div>
+</div>
+
+<!-- Danh sách sản phẩm -->
+<div class="row" id="productContainer"></div>
+
+<!-- Pagination -->
+<div class="text-center mt-4">
+    <nav>
+        <ul class="pagination">
+            <li class="page-item">
+                <a class="page-link" href="#" id="prevPage">Trước</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="#" id="nextPage">Sau</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchBox = document.getElementById("searchBox");
+        const categoryFilter = document.getElementById("categoryFilter");
+        const brandFilter = document.getElementById("brandFilter");
+        const priceFilter = document.getElementById("priceFilter");
+        const productContainer = document.getElementById("productContainer");
+        const products = @Html.Raw(Json.Serialize(Model));
+
+        let currentPage = 1;
+        const itemsPerPage = 8;
+
+        function filterProducts() {
+            let searchTerm = searchBox.value.toLowerCase();
+            let selectedCategory = categoryFilter.value;
+            let selectedBrand = brandFilter.value;
+            let selectedPrice = priceFilter.value;
+
+            let filteredProducts = products.filter(product => {
+                let matchesSearch = product.name.toLowerCase().includes(searchTerm);
+                let matchesCategory = selectedCategory === "" || product.category === selectedCategory;
+                let matchesBrand = selectedBrand === "" || product.brand === selectedBrand;
+                let matchesPrice = true;
+
+                let price = parseFloat(product.salePrice);
+                if (selectedPrice === "low") matchesPrice = price < 500000;
+                else if (selectedPrice === "medium") matchesPrice = price >= 500000 && price <= 1000000;
+                else if (selectedPrice === "high") matchesPrice = price > 1000000;
+
+                return matchesSearch && matchesCategory && matchesBrand && matchesPrice;
+            });
+
+            renderProducts(filteredProducts, currentPage);
+        }
+
+        function renderProducts(filteredProducts, page) {
+            productContainer.innerHTML = "";
+            let start = (page - 1) * itemsPerPage;
+            let end = start + itemsPerPage;
+            let paginatedProducts = filteredProducts.slice(start, end);
+
+            paginatedProducts.forEach(product => {
+                let discountPercentage = Math.round(((product.originalPrice - product.salePrice) / product.originalPrice) * 100);
+                let productHtml = `
+                            <div class="col-md-3 mb-4">
+                                <div class="card shadow-sm">
+                                    <img src="${product.images[0]}" class="card-img-top" alt="${product.name}" />
+                                    <div class="card-body">
+                                        <h5 class="card-title" style="font-size: 1rem; height: 50px; overflow: hidden; text-overflow: ellipsis;">
+                                            ${product.name}
+                                        </h5>
+                                        <p class="card-text">
+                                            <span class="text-decoration-line-through text-muted">${product.originalPrice.toLocaleString()}₫</span>
+                                            <span class="text-danger">${product.salePrice.toLocaleString()}₫</span>
+                                        </p>
+                                        <p class="card-text">
+                                            <span class="badge bg-success">-${discountPercentage}%</span>
+                                        </p>
+                                        <p class="card-text">
+                                            <small class="text-muted">${product.category}</small><br />
+                                            <small class="text-muted">${product.brand}</small>
+                                        </p>
+                                        <p class="card-text">
+                                            Còn hàng: ${product.stock.reduce((sum, s) => sum + s.quantity, 0)}
+                                        </p>
+                                        <a href="/Product/Details/${product.slug}" class="btn btn-primary btn-sm w-100">Xem Chi Tiết</a>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                productContainer.innerHTML += productHtml;
+            });
+
+            updatePagination(filteredProducts.length);
+        }
+
+        function updatePagination(totalItems) {
+            document.getElementById("prevPage").parentElement.classList.toggle("disabled", currentPage === 1);
+            document.getElementById("nextPage").parentElement.classList.toggle("disabled", currentPage * itemsPerPage >= totalItems);
+        }
+
+        document.getElementById("prevPage").addEventListener("click", function (event) {
+            event.preventDefault();
+            if (currentPage > 1) {
+                currentPage--;
+                filterProducts();
+            }
+        });
+
+        document.getElementById("nextPage").addEventListener("click", function (event) {
+            event.preventDefault();
+            let totalFiltered = products.filter(product => {
+                return product.name.toLowerCase().includes(searchBox.value.toLowerCase()) &&
+                    (categoryFilter.value === "" || product.category === categoryFilter.value) &&
+                    (brandFilter.value === "" || product.brand === brandFilter.value);
+            }).length;
+            if (currentPage * itemsPerPage < totalFiltered) {
+                currentPage++;
+                filterProducts();
+            }
+        });
+
+        searchBox.addEventListener("input", filterProducts);
+        categoryFilter.addEventListener("change", filterProducts);
+        brandFilter.addEventListener("change", filterProducts);
+        priceFilter.addEventListener("change", filterProducts);
+
+        filterProducts();
+    });
+</script>

@@ -1,0 +1,55 @@
+﻿@model IEnumerable<ShoeStoreMvc.Models.Product>
+
+<div class="container">
+    <h2 class="text-center mb-4">Latest Products</h2>
+
+    <div class="row">
+        @foreach (var product in Model)
+        {
+            <div class="col-md-3 mb-4">
+                <div class="card shadow-sm">
+                    <img src="@product.Images[0]" class="card-img-top" alt="@product.Name" />
+                    <div class="card-body">
+                        <h5 class="card-title" style="font-size: 1rem; height: 50px; overflow: hidden; text-overflow: ellipsis;">
+                            @product.Name
+                        </h5>
+
+                        <!-- Hiển thị giá -->
+                        <p class="card-text">
+                            <span class="text-decoration-line-through text-muted">@String.Format("{0:C}", product.OriginalPrice)</span>
+                            <span class="text-danger">@String.Format("{0:C}", product.SalePrice)</span>
+                        </p>
+
+                        <!-- Hiển thị danh mục & thương hiệu -->
+                        <p class="card-text">
+                            <small class="text-muted">@product.Category</small><br />
+                            <small class="text-muted">@product.Brand</small>
+                        </p>
+
+                        <!-- Hiển thị số lượng còn hàng -->
+                        <p class="card-text">
+                            In stock: @product.Stock.Sum(s => s.Quantity)
+                        </p>
+
+                        <!-- Nút xem chi tiết -->
+                        <a href="/Product/Details/@product.Slug" class="btn btn-primary btn-sm w-100">View Details</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Pagination (nếu cần) -->
+    <div class="text-center mt-4">
+        <nav>
+            <ul class="pagination">
+                <li class="page-item">
+                    <a class="page-link" href="#">Previous</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="#">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
