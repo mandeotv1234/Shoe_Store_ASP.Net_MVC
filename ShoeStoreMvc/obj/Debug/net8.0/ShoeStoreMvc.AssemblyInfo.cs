@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ShoeStoreMvc")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e5cc9661da7a8d6106edfac1f36b16d1992728fd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9e2b032c81d0d24311c508917633728bc9f3f7cc")]
 [assembly: System.Reflection.AssemblyProductAttribute("ShoeStoreMvc")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ShoeStoreMvc")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
