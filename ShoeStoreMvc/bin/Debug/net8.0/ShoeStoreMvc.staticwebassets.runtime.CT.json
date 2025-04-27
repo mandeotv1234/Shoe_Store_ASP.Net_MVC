@@ -14,6 +14,14 @@
               "SubPath": "css/site.css"
             },
             "Patterns": null
+          },
+          "style.css": {
+            "Children": null,
+            "Asset": {
+              "ContentRootIndex": 0,
+              "SubPath": "css/style.css"
+            },
+            "Patterns": null
           }
         },
         "Asset": null,
@@ -29,6 +37,14 @@
       },
       "js": {
         "Children": {
+          "chat.js": {
+            "Children": null,
+            "Asset": {
+              "ContentRootIndex": 0,
+              "SubPath": "js/chat.js"
+            },
+            "Patterns": null
+          },
           "site.js": {
             "Children": null,
             "Asset": {
